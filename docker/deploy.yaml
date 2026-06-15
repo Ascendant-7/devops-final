@@ -1,5 +1,5 @@
 ---
-- name: DevOps Final Deployment Automation
+- name: DevOps Final Deployment Automation (Raw Execution)
   hosts: web_servers
   gather_facts: false
   vars:
@@ -12,38 +12,19 @@
   tasks:
     # 1. RUN GIT PULL (Ensuring no local changes block it)
     - name: Reset local repository changes
-      shell: "git reset --hard HEAD"
-      args:
-        chdir: "{{ project_path }}"
-
-    - name: Pull latest changes from GitHub
-      shell: "git pull origin main"
-      args:
-        chdir: "{{ project_path }}"
+      raw: "cd {{ project_path }} && git reset --hard HEAD && git pull origin main"
 
     # 2. BUILD COMPOSER AND NPM
     - name: Install Composer dependencies
-      shell: "composer install --no-interaction --quiet"
-      args:
-        chdir: "{{ project_path }}"
+      raw: "cd {{ project_path }} && composer install --no-interaction --quiet"
 
     - name: Install NPM dependencies
-      shell: "npm install --no-audit --no-fund"
-      args:
-        chdir: "{{ project_path }}"
+      raw: "cd {{ project_path }} && npm install --no-audit --no-fund"
 
-    # 3. RUN TEST AGAINST SQLITE DB
+    # 3. RUN TEST AGAINST SQLITE DB (With internet retry and offline fallback)
     - name: Run test suite using SQLite profile
-      shell: "./mvnw test -Dspring.profiles.active=test"
-      args:
-        chdir: "{{ project_path }}"
+      raw: "cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test -o || (sleep 2 && cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test)"
 
     # 4. BACKUP THE MYSQL DATABASE
-    - name: Ensure backup directory exists
-      file:
-        path: "{{ backup_dir }}"
-        state: directory
-        mode: '0755'
-
-    - name: Dump live MySQL database to file
-      shell: "mysqldump -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > {{ backup_dir }}/backup_prod.sql"
+    - name: Backup live MySQL database
+      raw: "mkdir -p {{ backup_dir }} && mysqldump -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > {{ backup_dir }}/backup_prod.sql"
