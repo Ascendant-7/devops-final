@@ -1,12 +1,13 @@
 services:
-  web-server:
+  web-server-1:
     build:
       context: .
       dockerfile: web-server.Dockerfile
-    ports:
-      - "80:80"
-      - "8080:8080"
-      - "2222:22"
+    container_name: docker-web-server-1
+#    ports:
+#      - "80:80"
+#      - "8080:8080"
+#      - "2222:22"
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
@@ -17,6 +18,51 @@ services:
       - mysql
     networks:
       - devops-final
+
+  web-server-2:
+    build:
+      context: .
+      dockerfile: web-server.Dockerfile
+    container_name: docker-web-server-2
+#    ports:
+#      - "80:80"
+#      - "8080:8080"
+#      - "2222:22"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=ANG_Panha-db
+      - DB_USER=root
+      - DB_PASS=Hello@123
+    depends_on:
+      - mysql
+    networks:
+      - devops-final
+
+  load-balancer:
+    image: haproxy:latest
+    container_name: docker-load-balancer
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "8090:8090"
+      - "2222:22"
+    depends_on:
+      web-server-1:
+        condition: service_started
+      web-server-2:
+        condition: service_started
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: docker-phpmyadmin
+    environment:
+      PMA_HOST: mysql-db
+      PMA_PORT: 3306
+    ports:
+      - "0.0.0.0:8081:80"
+    depends_on:
+      - mysql
 
   mysql:
     image: mysql:8.0
