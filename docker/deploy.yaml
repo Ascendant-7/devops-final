@@ -21,9 +21,9 @@
     - name: Install NPM dependencies
       raw: "cd {{ project_path }} && npm install --no-audit --no-fund"
 
-    # 3. RUN TEST AGAINST SQLITE DB (With internet retry and offline fallback)
+# 3. RUN TEST AGAINST SQLITE DB
     - name: Run test suite using SQLite profile
-      raw: "cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test -o || (sleep 2 && cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test)"
+      raw: "cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test --no-transfer-progress"
 
     # 4. BACKUP THE MYSQL DATABASE
     - name: Backup live MySQL database
