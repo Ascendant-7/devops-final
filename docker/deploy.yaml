@@ -1,0 +1,49 @@
+---
+- name: DevOps Final Deployment Automation
+  hosts: web_servers
+  gather_facts: false
+  vars:
+    project_path: "/app/project"
+    backup_dir: "/app/backups"
+    db_name: "ANG_Panha-db"
+    db_user: "root"
+    db_pass: "Hello@123"
+
+  tasks:
+    # 1. RUN GIT PULL (Ensuring no local changes block it)
+    - name: Reset local repository changes
+      shell: "git reset --hard HEAD"
+      args:
+        chdir: "{{ project_path }}"
+
+    - name: Pull latest changes from GitHub
+      shell: "git pull origin main"
+      args:
+        chdir: "{{ project_path }}"
+
+    # 2. BUILD COMPOSER AND NPM
+    - name: Install Composer dependencies
+      shell: "composer install --no-interaction --quiet"
+      args:
+        chdir: "{{ project_path }}"
+
+    - name: Install NPM dependencies
+      shell: "npm install --no-audit --no-fund"
+      args:
+        chdir: "{{ project_path }}"
+
+    # 3. RUN TEST AGAINST SQLITE DB
+    - name: Run test suite using SQLite profile
+      shell: "./mvnw test -Dspring.profiles.active=test"
+      args:
+        chdir: "{{ project_path }}"
+
+    # 4. BACKUP THE MYSQL DATABASE
+    - name: Ensure backup directory exists
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Dump live MySQL database to file
+      shell: "mysqldump -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > {{ backup_dir }}/backup_prod.sql"

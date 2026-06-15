@@ -1,8 +1,10 @@
 FROM eclipse-temurin:25-jdk-alpine
 
 RUN apk update && \
-    apk add --no-cache nginx openssh git bash curl php php-mysqli php-json php-mbstring && \
+    apk add --no-cache nginx openssh git bash curl php php-cli php-mbstring php-xml php-phar php-openssl php-json php-mysqli nodejs npm sqlite && \
     rm -rf /var/cache/apk/*
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN mkdir -p /var/run/sshd && \
     echo 'root:Hello@123' | chpasswd && \
