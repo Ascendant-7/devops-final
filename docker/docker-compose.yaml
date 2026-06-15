@@ -1,0 +1,38 @@
+services:
+  web-server:
+    build:
+      context: .
+      dockerfile: web-server.Dockerfile
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "2222:22"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=ANG_Panha-db
+      - DB_USER=root
+      - DB_PASS=Hello@123
+    depends_on:
+      - mysql
+    networks:
+      - devops-final
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=ANG_Panha-db
+      - MYSQL_ROOT_PASSWORD=Hello@123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - devops-final
+
+networks:
+  devops-final:
+    driver: bridge
+
+volumes:
+  mysql-data:

@@ -1,0 +1,22 @@
+FROM eclipse-temurin:25-jdk-alpine
+
+RUN apk update && \
+    apk add --no-cache nginx openssh git bash curl php php-mysqli php-json php-mbstring && \
+    rm -rf /var/cache/apk/*
+
+RUN mkdir -p /var/run/sshd && \
+    echo 'root:Hello@123' | chpasswd && \
+    ssh-keygen -A && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+COPY nginx-spring.conf /etc/nginx/http.d/default.conf
+
+WORKDIR /app
+RUN mkdir -p /app/project
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 80 8080 22
+
+ENTRYPOINT ["/entrypoint.sh"]

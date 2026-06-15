@@ -1,0 +1,21 @@
+[PHP Modules]
+Core
+date
+filter
+hash
+json
+libxml
+mbstring
+mysqli
+mysqlnd
+openssl
+pcre
+random
+readline
+Reflection
+SPL
+standard
+zlib
+
+[Zend Modules]
+
