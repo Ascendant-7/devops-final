@@ -25,6 +25,6 @@
     - name: Run test suite using SQLite profile
       raw: "cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test --no-transfer-progress"
 
-    # 4. BACKUP THE MYSQL DATABASE
+# 4. BACKUP THE MYSQL DATABASE
     - name: Backup live MySQL database
-      raw: "mkdir -p {{ backup_dir }} && mysqldump -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > {{ backup_dir }}/backup_prod.sql"
+      raw: "mkdir -p {{ backup_dir }} && mysqldump --ssl-verify-server-cert=0 -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > {{ backup_dir }}/backup_prod.sql"
