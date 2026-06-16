@@ -16,7 +16,9 @@ echo "Checking Spring Boot Project..."
 if [ -d "/app/project/.git" ]; then
     echo "Project folder already exists. Pulling latest changes..."
     cd /app/project
-    git pull
+    git fetch origin
+    git reset --hard origin/main
+    git clean -fd
 else
     echo "Cloning Spring Boot Project..."
     GIT_REPO_URL="https://github.com/Ascendant-7/devops-final.git"
