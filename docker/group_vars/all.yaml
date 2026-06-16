@@ -1,0 +1,5 @@
+project_path: /app/project
+backup_dir: /opt/app/backups
+db_name: ANG_Panha-db
+db_user: root
+db_pass: Hello@123

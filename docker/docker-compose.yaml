@@ -18,6 +18,8 @@ services:
       - mysql
     networks:
       - devops-final
+    volumes:
+      - maven-shared-cache:/root/.m2/repository
 
   web-server-2:
     build:
@@ -38,31 +40,37 @@ services:
       - mysql
     networks:
       - devops-final
+    volumes:
+      - maven-shared-cache:/root/.m2/repository
 
   load-balancer:
-    image: haproxy:latest
+    image: haproxy:alpine
     container_name: docker-load-balancer
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     ports:
       - "8090:8090"
       - "2222:22"
+      - "1936:1936"
     depends_on:
       web-server-1:
         condition: service_started
       web-server-2:
         condition: service_started
+    networks:
+      - devops-final
 
   phpmyadmin:
-    image: phpmyadmin:latest
+    image: phpmyadmin:apache
     container_name: docker-phpmyadmin
     environment:
-      PMA_HOST: mysql-db
+      PMA_HOST: mysql
       PMA_PORT: 3306
-    ports:
-      - "0.0.0.0:8081:80"
+      PMA_ABSOLUTE_PATH: http://localhost:8090/phpmyadmin/
     depends_on:
       - mysql
+    networks:
+      - devops-final
 
   mysql:
     image: mysql:8.0
@@ -73,6 +81,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+      - mysql-backups:/app/backups
     networks:
       - devops-final
 
@@ -82,3 +91,10 @@ networks:
 
 volumes:
   mysql-data:
+  mysql-backups:
+  maven-shared-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $HOME/.m2/repository

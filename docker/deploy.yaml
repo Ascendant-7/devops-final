@@ -4,15 +4,11 @@
   gather_facts: false
   vars:
     project_path: "/app/project"
-    backup_dir: "/app/backups"
-    db_name: "ANG_Panha-db"
-    db_user: "root"
-    db_pass: "Hello@123"
 
   tasks:
     # 1. RUN GIT PULL (Ensuring no local changes block it)
     - name: Reset local repository changes
-      raw: "cd {{ project_path }} && git reset --hard HEAD && git pull origin main"
+      raw: "cd {{ project_path }} && git fetch origin && git reset --hard origin/main"
 
     # 2. BUILD COMPOSER AND NPM
     - name: Install Composer dependencies
@@ -25,6 +21,15 @@
     - name: Run test suite using SQLite profile
       raw: "cd {{ project_path }} && ./mvnw test -Dspring.profiles.active=test --no-transfer-progress"
 
-# 4. BACKUP THE MYSQL DATABASE
-    - name: Backup live MySQL database
-      raw: "mkdir -p {{ backup_dir }} && mysqldump --ssl-verify-server-cert=0 -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > {{ backup_dir }}/backup_prod.sql"
+- name: MYSQL BACKUP
+  hosts: databases
+  gather_facts: false
+  vars:
+    backup_dir: "/app/backups"
+    db_name: "ANG_Panha-db"
+    db_user: "root"
+    db_pass: "Hello@123"
+
+  tasks:
+    - name: backup databases
+      raw: "mysqldump -h mysql -u {{ db_user }} -p'{{ db_pass }}' {{ db_name}} > {{ backup_dir }}/backup_prod.sql"
